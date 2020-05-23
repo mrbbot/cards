@@ -39,6 +39,8 @@ interface ParsedCard {
 interface ParsedCardSet {
   id: string;
   name: string;
+  section: string;
+  wip: boolean;
   cards: ParsedCard[];
 }
 
@@ -47,6 +49,8 @@ export function parse(fileName: string, data: string): ParsedCardSet {
   const name =
     frontMatter.name || fileName.substring(0, fileName.lastIndexOf("."));
   const id = frontMatter.id || idify(name.replace(nonAlphanumericRegexp, ""));
+  const section = frontMatter.section || "";
+  const wip = frontMatter.wip || false;
 
   const md = MarkdownIt({ html: true });
   md.use(mk, { throwOnError: false });
@@ -163,13 +167,13 @@ export function parse(fileName: string, data: string): ParsedCardSet {
     appendCard();
   }
 
-  return { id, name, cards };
+  return { id, name, section, wip, cards };
 }
 
 export async function parseAll(parsePath: string): Promise<ParsedCardSet[]> {
   const cardSets: ParsedCardSet[] = [];
-  if (parsePath.endsWith(".md")) {
-    const fileName = path.basename(parsePath);
+  const fileName = path.basename(parsePath);
+  if (fileName.endsWith(".md") && !fileName.startsWith("_")) {
     const cardSet = parse(fileName, await fs.readFile(parsePath, "utf8"));
     cardSets.push(cardSet);
   } else if ((await fs.stat(parsePath)).isDirectory()) {

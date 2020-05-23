@@ -15,21 +15,27 @@ export interface Card {
 export interface CardSet {
   id: string;
   name: string;
+  section: string;
+  wip: boolean;
   cards: Card[];
 }
 
 export async function getCardSet(setId: string): Promise<CardSet | null> {
-  const setRes = await pool.query("SELECT name FROM card_set WHERE id = $1", [
-    setId
-  ]);
+  const setRes = await pool.query(
+    "SELECT name, section, wip FROM card_set WHERE id = $1",
+    [setId]
+  );
   if (setRes.rowCount === 0) return null;
+  const set: CardSet = setRes.rows[0];
   const cardsRes = await pool.query(
     "SELECT id, section, title, body, align FROM card WHERE set_id = $1 ORDER BY set_id, ordering",
     [setId]
   );
   return {
     id: setId,
-    name: setRes.rows[0].name,
+    name: set.name,
+    section: set.section,
+    wip: set.wip,
     cards: cardsRes.rows
   };
 }

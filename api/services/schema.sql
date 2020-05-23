@@ -8,7 +8,9 @@ ALTER USER cardsuser CREATEDB;
 
 CREATE TABLE card_set (
     id text PRIMARY KEY,
-    name text
+    name text NOT NULL ,
+    section text NOT NULL DEFAULT '',
+    wip bool NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE card (
@@ -19,7 +21,7 @@ CREATE TABLE card (
     body text NOT NULL,
     ordering int NOT NULL,
     document tsvector NOT NULL,
-    align varchar(8) DEFAULT ''
+    align varchar(8) NOT NULL DEFAULT ''
 );
 -- CREATE INDEX card_ordering_index ON card(ordering);
 CREATE INDEX card_document_index ON card USING gin(document);

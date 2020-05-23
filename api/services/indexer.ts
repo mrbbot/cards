@@ -14,16 +14,14 @@ export default async function indexer(indexPath: string) {
     const cardIdsSet = new Set<string>(cardIdsRes.rows.map((row) => row.id));
 
     for (const cardSet of cardSets) {
-      if (cardSet.cards.length === 0) continue;
-
       // eslint-disable-next-line no-console
       console.log(`Indexing ${cardSet.id}...`);
       cardSetIdsSet.delete(cardSet.id);
 
       await client.query("BEGIN");
       await client.query(
-        "INSERT INTO card_set(id, name) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name",
-        [cardSet.id, cardSet.name]
+        "INSERT INTO card_set(id, name, section, wip) VALUES ($1, $2, $3, $4) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, section = EXCLUDED.section, wip = EXCLUDED.wip",
+        [cardSet.id, cardSet.name, cardSet.section, cardSet.wip]
       );
       let i = 0;
       for (const card of cardSet.cards) {

@@ -37,7 +37,7 @@ export default {
    */
   modules: ["@nuxt/http"],
   http: {
-    prefix: "/api"
+    proxy: true
   },
   /*
    ** Build configuration

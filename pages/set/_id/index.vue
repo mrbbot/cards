@@ -20,7 +20,7 @@ export default Vue.extend({
     return !!params.id;
   },
   async asyncData({ $http, params, store }): Promise<{ set: CardSet }> {
-    const set: CardSet = await $http.$get(`/cards/${params.id}`);
+    const set: CardSet = await $http.$get(`/api/cards/${params.id}`);
     store.commit("setNavbarTitle", set.name);
     return { set };
   }

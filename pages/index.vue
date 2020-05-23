@@ -80,7 +80,7 @@ export default Vue.extend({
     store.commit("setNavbarTitle");
   },
   async asyncData({ $http }): Promise<{ sections: CardSetSection[] }> {
-    return { sections: await $http.$get(`/sets`) };
+    return { sections: await $http.$get(`/api/sets`) };
   },
   data() {
     return {
@@ -99,7 +99,7 @@ export default Vue.extend({
       if (newQuery === "") return;
       this.searching = true;
       (this as any).queryDebounceHandle = setTimeout(async () => {
-        this.foundCards = await this.$http.$get<Card[]>("/search", {
+        this.foundCards = await this.$http.$get<Card[]>("/api/search", {
           searchParams: { q: newQuery }
         });
         this.searching = false;

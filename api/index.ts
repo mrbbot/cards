@@ -1,11 +1,17 @@
 import express from "express";
-import cards from "./routes/cards";
+import set from "./routes/set";
 
 const app = express();
+app.disable("x-powered-by");
 
-app.use(cards);
+const api = express.Router();
+api.use(set);
+app.use("/api", api);
+
+// @ts-ignore
+app.use(express.static(process.env.CARDS_PATH, { maxAge: "7d" }));
 
 export default {
-  path: "/api",
+  path: "/",
   handler: app
 };

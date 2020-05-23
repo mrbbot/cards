@@ -1,9 +1,5 @@
-import { Pool } from "pg";
 import { parseAll } from "./parser";
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
-});
+import { pool } from "./db";
 
 export default async function indexer(indexPath: string) {
   const cardSets = await parseAll(indexPath);
@@ -15,7 +11,6 @@ export default async function indexer(indexPath: string) {
       cardSetIdsRes.rows.map((row) => row.id)
     );
     const cardIdsRes = await client.query("SELECT id FROM card");
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars,no-unused-vars
     const cardIdsSet = new Set<string>(cardIdsRes.rows.map((row) => row.id));
 
     for (const cardSet of cardSets) {
@@ -30,22 +25,25 @@ export default async function indexer(indexPath: string) {
         "INSERT INTO card_set(id, name) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name",
         [cardSet.id, cardSet.name]
       );
+      let i = 0;
       for (const card of cardSet.cards) {
         // eslint-disable-next-line no-console
         console.log(`  Indexing ${card.id}...`);
         cardIdsSet.delete(card.id);
         await client.query(
-          `INSERT INTO card(id, set_id, section, title, body, document, align) VALUES ($1, $2, $3, $4, $5, to_tsvector($6), $7) ON CONFLICT (id) DO UPDATE SET set_id = EXCLUDED.set_id, section = EXCLUDED.section, title = EXCLUDED.title, body = EXCLUDED.body, document = EXCLUDED.document, align = EXCLUDED.align`,
+          `INSERT INTO card(id, set_id, section, title, body, ordering, document, align) VALUES ($1, $2, $3, $4, $5, $6, to_tsvector($7), $8) ON CONFLICT (id) DO UPDATE SET set_id = EXCLUDED.set_id, section = EXCLUDED.section, title = EXCLUDED.title, body = EXCLUDED.body, ordering = EXCLUDED.ordering, document = EXCLUDED.document, align = EXCLUDED.align`,
           [
             card.id,
             cardSet.id,
             card.section.html,
             card.title.html,
             card.body.html,
+            i,
             card.section.text + ". " + card.title.text + ". " + card.body.text,
             card.align || ""
           ]
         );
+        i++;
       }
     }
 

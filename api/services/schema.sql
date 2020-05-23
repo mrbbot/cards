@@ -17,10 +17,12 @@ CREATE TABLE card (
     section text NOT NULL,
     title text NOT NULL,
     body text NOT NULL,
+    ordering int NOT NULL,
     document tsvector NOT NULL,
     align varchar(8) DEFAULT ''
 );
-CREATE INDEX card_document_fts ON card USING gin(document);
+-- CREATE INDEX card_ordering_index ON card(ordering);
+CREATE INDEX card_document_index ON card USING gin(document);
 
 GRANT ALL PRIVILEGES ON TABLE card_set TO cardsuser;
 GRANT ALL PRIVILEGES ON TABLE card TO cardsuser;

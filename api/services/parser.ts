@@ -28,7 +28,7 @@ interface RenderedText {
   html: string;
 }
 
-interface Card {
+interface ParsedCard {
   id: string;
   section: RenderedText;
   title: RenderedText;
@@ -36,13 +36,13 @@ interface Card {
   align?: string;
 }
 
-interface CardSet {
+interface ParsedCardSet {
   id: string;
   name: string;
-  cards: Card[];
+  cards: ParsedCard[];
 }
 
-export function parse(fileName: string, data: string): CardSet {
+export function parse(fileName: string, data: string): ParsedCardSet {
   const { content, data: frontMatter } = matter(data);
   const name =
     frontMatter.name || fileName.substring(0, fileName.lastIndexOf("."));
@@ -72,7 +72,7 @@ export function parse(fileName: string, data: string): CardSet {
   }
 
   const tokens = md.parse(content, {});
-  const cards: Card[] = [];
+  const cards: ParsedCard[] = [];
 
   let sectionTitleTokens: Token[] | undefined;
   let cardTitleTokens: Token[] | undefined;
@@ -166,8 +166,8 @@ export function parse(fileName: string, data: string): CardSet {
   return { id, name, cards };
 }
 
-export async function parseAll(parsePath: string): Promise<CardSet[]> {
-  const cardSets: CardSet[] = [];
+export async function parseAll(parsePath: string): Promise<ParsedCardSet[]> {
+  const cardSets: ParsedCardSet[] = [];
   if (parsePath.endsWith(".md")) {
     const fileName = path.basename(parsePath);
     const cardSet = parse(fileName, await fs.readFile(parsePath, "utf8"));

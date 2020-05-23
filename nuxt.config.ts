@@ -1,4 +1,4 @@
-import indexer from "./api/cards/indexer";
+import indexer from "./api/services/indexer";
 
 export default {
   mode: "universal",
@@ -37,15 +37,10 @@ export default {
   /*
    ** Nuxt.js modules
    */
-  modules: [
-    // Doc: https://axios.nuxtjs.org/usage
-    "@nuxtjs/axios"
-  ],
-  /*
-   ** Axios module configuration
-   ** See https://axios.nuxtjs.org/options
-   */
-  axios: {},
+  modules: ["@nuxt/http"],
+  http: {
+    prefix: "/api"
+  },
   /*
    ** Build configuration
    */
@@ -59,7 +54,6 @@ export default {
     async ready() {
       // @ts-ignore
       await indexer(process.env.CARDS_PATH);
-      process.exit(0);
     }
   },
   serverMiddleware: ["~/api/index.ts"]

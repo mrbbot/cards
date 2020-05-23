@@ -1,5 +1,5 @@
 import path from "path";
-import { promises as fs } from "fs";
+import { promises as fs, existsSync } from "fs";
 import crypto from "crypto";
 import matter from "gray-matter";
 import MarkdownIt from "markdown-it";
@@ -7,6 +7,7 @@ import Token from "markdown-it/lib/token";
 // @ts-ignore
 import mk from "markdown-it-katex";
 
+const dollarTrimRegex = /^\$+|\$+$/g;
 const metaRegex = /%(.+)%/;
 const spaceRegexp = / /g;
 const nonAlphanumericSpaceRegexp = /[_^/]/g;
@@ -44,7 +45,11 @@ interface ParsedCardSet {
   cards: ParsedCard[];
 }
 
-export function parse(fileName: string, data: string): ParsedCardSet {
+export function parse(
+  fileName: string,
+  data: string,
+  macros?: object
+): ParsedCardSet {
   const { content, data: frontMatter } = matter(data);
   const name =
     frontMatter.name || fileName.substring(0, fileName.lastIndexOf("."));
@@ -53,7 +58,7 @@ export function parse(fileName: string, data: string): ParsedCardSet {
   const wip = frontMatter.wip || false;
 
   const md = MarkdownIt({ html: true });
-  md.use(mk, { throwOnError: false });
+  md.use(mk, { throwOnError: false, macros });
 
   function renderTokens(tokens?: Token[]): RenderedText {
     if (!tokens) return { text: "", html: "" };
@@ -170,17 +175,42 @@ export function parse(fileName: string, data: string): ParsedCardSet {
   return { id, name, section, wip, cards };
 }
 
-export async function parseAll(parsePath: string): Promise<ParsedCardSet[]> {
+export async function parseAll(
+  parsePath: string,
+  macros?: object
+): Promise<ParsedCardSet[]> {
+  if (!macros) {
+    const macrosPath = path.join(parsePath, "_Macros.md");
+    if (existsSync(macrosPath)) {
+      const macrosData = await fs.readFile(macrosPath, "utf8");
+      macros = Object.fromEntries(
+        macrosData
+          .trim()
+          .split("\n\n")
+          .map((macro) =>
+            macro
+              .split("\n")
+              .map((line) => line.trim().replace(dollarTrimRegex, ""))
+          )
+      );
+    } else {
+      macros = {};
+    }
+  }
   const cardSets: ParsedCardSet[] = [];
   const fileName = path.basename(parsePath);
   if (fileName.endsWith(".md") && !fileName.startsWith("_")) {
-    const cardSet = parse(fileName, await fs.readFile(parsePath, "utf8"));
+    const cardSet = parse(
+      fileName,
+      await fs.readFile(parsePath, "utf8"),
+      macros
+    );
     cardSets.push(cardSet);
   } else if ((await fs.stat(parsePath)).isDirectory()) {
     const fileNames = await fs.readdir(parsePath);
     for (const fileName of fileNames) {
       const filePath = path.join(parsePath, fileName);
-      cardSets.push.apply(cardSets, await parseAll(filePath));
+      cardSets.push.apply(cardSets, await parseAll(filePath, macros));
     }
   }
   return cardSets;

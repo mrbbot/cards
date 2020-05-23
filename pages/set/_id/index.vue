@@ -1,21 +1,28 @@
 <template>
-  <div>
-    <h1>{{ set.name }}</h1>
-    <div v-for="card in set.cards" :key="card.id">
-      <div v-html="card.title"></div>
-      <h3 v-html="card.section"></h3>
-      <div v-html="card.body"></div>
+  <section class="section">
+    <div class="container">
+      <CardGrid :cards="set.cards" />
     </div>
-  </div>
+  </section>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import { CardSet } from "~/api/services/db";
+import CardGrid from "~/components/CardGrid.vue";
 
 export default Vue.extend({
-  async asyncData({ $http, params }): Promise<{ set: CardSet }> {
-    return { set: await $http.$get(`/set/${params.id}`) };
+  components: {
+    CardGrid
+  },
+  validate({ params }): boolean {
+    // file based required parameters don't seem to be working
+    return !!params.id;
+  },
+  async asyncData({ $http, params, store }): Promise<{ set: CardSet }> {
+    const set: CardSet = await $http.$get(`/cards/${params.id}`);
+    store.commit("setNavbarTitle", set.name);
+    return { set };
   }
 });
 </script>

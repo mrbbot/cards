@@ -9,19 +9,25 @@
     "build": "nuxt-ts build",
     "generate": "nuxt-ts generate",
     "start": "nuxt-ts start",
-    "lint": "eslint --ext .js,.vue --ignore-path .gitignore . --fix"
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore . --fix",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@nuxt/http": "^0.5.1",
     "@nuxt/typescript-runtime": "^0.4.0",
+    "bulma": "^0.8.2",
     "defu": "^2.0.4",
     "express": "^4.17.1",
     "express-promise-router": "^3.0.3",
+    "github-markdown-css": "^3.0.1",
     "gray-matter": "^4.0.2",
+    "katex": "^0.11.1",
     "markdown-it": "^11.0.0",
-    "markdown-it-katex": "^2.0.3",
+    "markdown-it-katex": "git+ssh://git@github.com/MicroDroid/markdown-it-katex.git",
     "nuxt": "^2.0.0",
-    "pg": "^8.2.1"
+    "patch-package": "^6.2.2",
+    "pg": "^8.2.1",
+    "vue-feather-icons": "^5.0.0"
   },
   "devDependencies": {
     "@nuxt/typescript-build": "^0.6.0",
@@ -29,11 +35,14 @@
     "@nuxtjs/eslint-module": "^1.0.0",
     "@types/markdown-it": "^10.0.1",
     "@types/pg": "^7.14.3",
+    "@types/vue-feather-icons": "^5.0.0",
     "babel-eslint": "^10.0.1",
     "eslint": "^6.1.0",
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-nuxt": ">=0.4.2",
     "eslint-plugin-prettier": "^3.1.2",
-    "prettier": "^1.19.1"
+    "node-sass": "^4.14.1",
+    "prettier": "^1.19.1",
+    "sass-loader": "^8.0.2"
   }
 }

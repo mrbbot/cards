@@ -1,21 +1,23 @@
+import consola from "consola";
 import { parseAll } from "./parser";
-import { pool } from "./db";
+import { Card, CardSet, pool } from "./db";
 
 export default async function indexer(indexPath: string) {
   const cardSets = await parseAll(indexPath);
 
   const client = await pool.connect();
   try {
-    const cardSetIdsRes = await client.query("SELECT id FROM card_set");
+    const cardSetIdsRes = await client.query<CardSet>(
+      "SELECT id FROM card_set"
+    );
     const cardSetIdsSet = new Set<string>(
       cardSetIdsRes.rows.map((row) => row.id)
     );
-    const cardIdsRes = await client.query("SELECT id FROM card");
+    const cardIdsRes = await client.query<Card>("SELECT id FROM card");
     const cardIdsSet = new Set<string>(cardIdsRes.rows.map((row) => row.id));
 
     for (const cardSet of cardSets) {
-      // eslint-disable-next-line no-console
-      console.log(`Indexing ${cardSet.id}...`);
+      consola.info(`Indexing ${cardSet.id}...`);
       cardSetIdsSet.delete(cardSet.id);
 
       await client.query("BEGIN");
@@ -25,8 +27,7 @@ export default async function indexer(indexPath: string) {
       );
       let i = 0;
       for (const card of cardSet.cards) {
-        // eslint-disable-next-line no-console
-        console.log(`  Indexing ${card.id}...`);
+        // consola.info(`  Indexing ${card.id}...`);
         cardIdsSet.delete(card.id);
         await client.query(
           `INSERT INTO card(id, set_id, section, title, body, ordering, document, align) VALUES ($1, $2, $3, $4, $5, $6, to_tsvector($7), $8) ON CONFLICT (id) DO UPDATE SET set_id = EXCLUDED.set_id, section = EXCLUDED.section, title = EXCLUDED.title, body = EXCLUDED.body, ordering = EXCLUDED.ordering, document = EXCLUDED.document, align = EXCLUDED.align`,
@@ -47,19 +48,19 @@ export default async function indexer(indexPath: string) {
 
     // remove all deleted cards/card sets
     for (const deletedCardId of cardIdsSet) {
-      // eslint-disable-next-line no-console
-      console.log(`Deleting card ${deletedCardId}...`);
+      consola.info(`Deleting card ${deletedCardId}...`);
       await client.query("DELETE FROM card WHERE id = $1", [deletedCardId]);
     }
     for (const deletedCardSetId of cardSetIdsSet) {
-      // eslint-disable-next-line no-console
-      console.log(`Deleting set ${deletedCardSetId}...`);
+      consola.info(`Deleting set ${deletedCardSetId}...`);
       await client.query("DELETE FROM card_set WHERE id = $1", [
         deletedCardSetId
       ]);
     }
 
     await client.query("COMMIT");
+
+    consola.success("Indexed!");
   } catch (e) {
     await client.query("ROLLBACK");
     throw e;

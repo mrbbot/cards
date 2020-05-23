@@ -23,7 +23,7 @@
     "gray-matter": "^4.0.2",
     "katex": "^0.11.1",
     "markdown-it": "^11.0.0",
-    "markdown-it-katex": "git+ssh://git@github.com/MicroDroid/markdown-it-katex.git",
+    "markdown-it-katex": "github:MicroDroid/markdown-it-katex",
     "nuxt": "^2.0.0",
     "patch-package": "^6.2.2",
     "pg": "^8.2.1",

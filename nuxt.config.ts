@@ -1,5 +1,3 @@
-import indexer from "./api/services/indexer";
-
 export default {
   mode: "universal",
   /*
@@ -49,14 +47,6 @@ export default {
      ** You can extend webpack config here
      */
     extend() {}
-  },
-  hooks: {
-    async ready() {
-      if (process.env.NODE_ENV !== "development") {
-        // @ts-ignore
-        await indexer(process.env.CARDS_PATH);
-      }
-    }
   },
   serverMiddleware: ["~/api/index.ts"]
 };

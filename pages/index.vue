@@ -3,23 +3,21 @@
     <section class="section">
       <div class="container">
         <div class="field">
-          <p class="control has-icons-left has-icons-right">
+          <p class="control has-icons-left">
             <!--suppress HtmlFormInputWithoutLabel -->
             <input
               v-model="query"
               class="input"
               type="text"
-              placeholder="Search Cards"
+              placeholder="Press enter to search cards"
+              @keydown="onQueryKeyDown"
             />
             <span class="icon is-small is-left">
               <SearchIcon />
             </span>
-            <span v-show="searching" class="icon is-small is-right is-spinning">
-              <RefreshCwIcon />
-            </span>
           </p>
         </div>
-        <CardGrid v-if="query" :cards="foundCards" />
+        <CardGrid v-if="$route.query.q" :cards="results" />
         <table
           v-else
           class="table is-fullwidth is-hoverable is-striped for-sets"
@@ -66,45 +64,58 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { SearchIcon, RefreshCwIcon } from "vue-feather-icons";
+import { SearchIcon } from "vue-feather-icons";
 import CardGrid from "~/components/CardGrid.vue";
 import { Card, CardSetSection } from "~/api/services/db";
+
+interface AsyncData {
+  query: string;
+  sections: CardSetSection[];
+  results: Card[];
+}
 
 export default Vue.extend({
   components: {
     SearchIcon,
-    RefreshCwIcon,
     CardGrid
   },
-  middleware({ store }) {
-    store.commit("setNavbarTitle");
-  },
-  async asyncData({ $http }): Promise<{ sections: CardSetSection[] }> {
-    return { sections: await $http.$get(`/api/sets`) };
-  },
-  data() {
-    return {
-      query: "",
-      searching: false,
-      foundCards: [] as Card[]
+  async asyncData({ $http, query, store }): Promise<AsyncData> {
+    const data: AsyncData = {
+      query: query.q?.toString() || "",
+      sections: [],
+      results: []
     };
-  },
-  watch: {
-    query(newQuery) {
-      this.searching = false;
-      this.foundCards = [];
-      if ((this as any).queryDebounceHandle) {
-        clearTimeout((this as any).queryDebounceHandle);
-      }
-      if (newQuery === "") return;
-      this.searching = true;
-      (this as any).queryDebounceHandle = setTimeout(async () => {
-        this.foundCards = await this.$http.$get<Card[]>("/api/search", {
-          searchParams: { q: newQuery }
-        });
-        this.searching = false;
-      }, 500);
+    if (data.query) {
+      data.results = await $http.$get<Card[]>("/api/search", {
+        searchParams: { q: data.query }
+      });
+      store.commit("setNavbarTitle", "Search");
+    } else {
+      data.sections = await $http.$get(`/api/sets`);
+      store.commit("setNavbarTitle");
     }
+
+    return data;
+  },
+  watchQuery: true,
+  methods: {
+    onQueryKeyDown(e: KeyboardEvent) {
+      if (e.key === "Enter") {
+        this.$router.push({
+          name: "index",
+          query: {
+            // @ts-ignore
+            q: this.query || undefined
+          }
+        });
+      }
+    }
+  },
+  head() {
+    return {
+      // @ts-ignore
+      title: this.query ? "Search | Cards" : "Cards"
+    };
   }
 });
 </script>

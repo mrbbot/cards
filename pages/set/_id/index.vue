@@ -23,6 +23,12 @@ export default Vue.extend({
     const set: CardSet = await $http.$get(`/api/cards/${params.id}`);
     store.commit("setNavbarTitle", set.name);
     return { set };
+  },
+  head() {
+    return {
+      // @ts-ignore
+      title: this.set.name + " | Cards"
+    };
   }
 });
 </script>

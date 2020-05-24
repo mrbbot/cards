@@ -10,6 +10,7 @@ export interface Card {
   title: string;
   body: string;
   align?: string;
+  rank?: number;
 }
 
 export interface CardSet {
@@ -71,7 +72,7 @@ export async function getCardSet(setId: string): Promise<CardSet | null> {
 
 export async function searchCards(q: string): Promise<Card[]> {
   const res = await pool.query<Card>(
-    "SELECT id, section, title, body, align FROM card WHERE document @@ plainto_tsquery($1) LIMIT 50",
+    "SELECT id, section, title, body, align, ts_rank(document, query) AS rank FROM card, plainto_tsquery($1) query WHERE document @@ query ORDER BY rank DESC LIMIT 50",
     [q]
   );
   return res.rows;

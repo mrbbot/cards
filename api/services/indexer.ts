@@ -30,7 +30,17 @@ export default async function indexer(indexPath: string) {
         // consola.info(`  Indexing ${card.id}...`);
         cardIdsSet.delete(card.id);
         await client.query(
-          `INSERT INTO card(id, set_id, section, title, body, ordering, document, align) VALUES ($1, $2, $3, $4, $5, $6, to_tsvector($7), $8) ON CONFLICT (id) DO UPDATE SET set_id = EXCLUDED.set_id, section = EXCLUDED.section, title = EXCLUDED.title, body = EXCLUDED.body, ordering = EXCLUDED.ordering, document = EXCLUDED.document, align = EXCLUDED.align`,
+          "INSERT INTO card(id, set_id, section, title, body, ordering, document, align) " +
+            "VALUES ($1, $2, $3, $4, $5, $6, setweight(to_tsvector($7), 'C') || setweight(to_tsvector($8), 'A') || setweight(to_tsvector($9), 'B'), $10) " +
+            "ON CONFLICT (id) DO " +
+            "UPDATE SET " +
+            "set_id = EXCLUDED.set_id, " +
+            "section = EXCLUDED.section, " +
+            "title = EXCLUDED.title, " +
+            "body = EXCLUDED.body, " +
+            "ordering = EXCLUDED.ordering, " +
+            "document = EXCLUDED.document, " +
+            "align = EXCLUDED.align",
           [
             card.id,
             cardSet.id,
@@ -38,7 +48,9 @@ export default async function indexer(indexPath: string) {
             card.title.html,
             card.body.html,
             i,
-            card.section.text + ". " + card.title.text + ". " + card.body.text,
+            card.section.text,
+            card.title.text,
+            card.body.text,
             card.align || ""
           ]
         );

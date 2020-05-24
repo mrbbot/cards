@@ -26,5 +26,18 @@ export default Vue.extend({
 </script>
 
 <style lang="sass">
-@import "~bulma"
+@import "~bulma/sass/utilities/_all"
+@import "~bulma/sass/base/_all"
+
+@import "~bulma/sass/elements/container"
+@import "~bulma/sass/elements/icon"
+@import "~bulma/sass/elements/table"
+
+@import "~bulma/sass/form/shared"
+@import "~bulma/sass/form/input-textarea"
+@import "~bulma/sass/form/tools"
+
+@import "~bulma/sass/components/navbar"
+
+@import "~bulma/sass/layout/section"
 </style>

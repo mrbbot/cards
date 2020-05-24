@@ -25,9 +25,18 @@ export default Vue.extend({
     return { set };
   },
   head() {
+    // @ts-ignore
+    const name = this.set.name;
     return {
       // @ts-ignore
-      title: this.set.name + " | Cards"
+      title: name + " | Cards",
+      meta: [
+        {
+          hid: "description",
+          name: "description",
+          content: `MrBBot's ${name} Flashcard Collection`
+        }
+      ]
     };
   }
 });

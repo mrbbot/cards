@@ -1,12 +1,13 @@
 {
   "name": "cards",
   "version": "1.0.0",
-  "description": "Cards browser",
+  "description": "MrBBot's Flashcard Collection",
   "author": "MrBBot",
   "private": true,
   "scripts": {
     "dev": "nuxt-ts",
     "build": "nuxt-ts build",
+    "analyze": "nuxt-ts build -a",
     "generate": "nuxt-ts generate",
     "start": "nuxt-ts start",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore . --fix",

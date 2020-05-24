@@ -114,8 +114,9 @@ export default Vue.extend({
     }
   },
   head() {
+    const q = this.$route.query.q?.toString();
     return {
-      title: this.$route.query.q?.toString() ? "Search | Cards" : "Cards"
+      title: q ? q + " | Cards" : "Cards"
     };
   }
 });

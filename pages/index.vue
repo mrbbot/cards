@@ -43,15 +43,17 @@
                 <td>{{ set.name }}</td>
                 <td>{{ set.cardCount }}</td>
                 <td>
-                  {{ set.cardCount === 0 ? "🚨" : set.wip ? "📚️️️" : "✅" }}
-                  &nbsp;
-                  {{
+                  <span class="state-emoji">{{
+                    set.cardCount === 0 ? "🚨" : set.wip ? "📚️️️" : "✅"
+                  }}</span
+                  >&nbsp;
+                  <span class="state-text">{{
                     set.cardCount === 0
                       ? "Not Started"
                       : set.wip
                       ? "Work in Progress"
                       : "Complete"
-                  }}
+                  }}</span>
                 </td>
               </nuxt-link>
             </template>
@@ -121,9 +123,13 @@ export default Vue.extend({
 </script>
 
 <style lang="sass">
-.table.for-sets
-  td
-    cursor: pointer
+@import "~bulma/sass/utilities/initial-variables"
+
+.table.for-sets td
+  cursor: pointer
+  @media (max-width: $tablet)
+    .state-text
+      display: none
 
 .is-spinning
   animation: spinning 1s infinite linear

@@ -19,8 +19,20 @@ export default Vue.extend({
     // file based required parameters don't seem to be working
     return !!params.id;
   },
-  async asyncData({ $http, params, store }): Promise<{ set: CardSet }> {
-    const set: CardSet = await $http.$get(`/api/cards/${params.id}`);
+  async asyncData({
+    $http,
+    params,
+    store,
+    error
+  }): Promise<{ set: CardSet } | undefined> {
+    const res = await $http.get(`/api/cards/${params.id}`, {
+      throwHttpErrors: false
+    });
+    if (res.status === 404) {
+      error({ statusCode: 404, message: "Set not found" });
+      return;
+    }
+    const set: CardSet = await res.json();
     store.commit("setNavbarTitle", set.name);
     return { set };
   },

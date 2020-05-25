@@ -34,6 +34,10 @@ export default Vue.extend({
     }
     const set: CardSet = await res.json();
     store.commit("setNavbarTitle", set.name);
+    if (set.cardCount === 0) {
+      error({ statusCode: 200, message: "No cards in set" });
+      return;
+    }
     return { set };
   },
   head() {

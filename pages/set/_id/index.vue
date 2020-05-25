@@ -25,7 +25,7 @@ export default Vue.extend({
     store,
     error
   }): Promise<{ set: CardSet } | undefined> {
-    const res = await $http.get(`/api/cards/${params.id}`, {
+    const res = await $http.get(`/api/cards/sets/${params.id}`, {
       throwHttpErrors: false
     });
     if (res.status === 404) {

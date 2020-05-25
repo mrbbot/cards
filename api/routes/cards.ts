@@ -4,7 +4,7 @@ import indexer from "../services/indexer";
 
 const router = Router();
 
-router.get("/index", async (_req, res) => {
+router.get("/reindex", async (_req, res) => {
   // @ts-ignore
   await indexer(process.env.CARDS_PATH);
   res.redirect("/");
@@ -14,7 +14,7 @@ router.get("/sets", async (_req, res) => {
   res.json(await getCardSets());
 });
 
-router.get("/cards/:setId", async (req, res) => {
+router.get("/sets/:setId", async (req, res) => {
   const set = await getCardSet(req.params.setId);
   if (!set) res.status(404);
   res.json(set);

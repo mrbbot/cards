@@ -1,11 +1,11 @@
 import express from "express";
-import set from "./routes/set";
+import cards from "./routes/cards";
 
 const app = express();
 app.disable("x-powered-by");
 
 const api = express.Router();
-api.use(set);
+api.use("/cards", cards);
 app.use("/api", api);
 
 // @ts-ignore

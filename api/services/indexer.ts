@@ -7,6 +7,7 @@ export default async function indexer(indexPath: string) {
 
   const client = await pool.connect();
   try {
+    await client.query("BEGIN");
     const cardSetIdsRes = await client.query<CardSet>(
       "SELECT id FROM card_set"
     );
@@ -20,7 +21,6 @@ export default async function indexer(indexPath: string) {
       consola.info(`Indexing ${cardSet.id}...`);
       cardSetIdsSet.delete(cardSet.id);
 
-      await client.query("BEGIN");
       await client.query(
         "INSERT INTO card_set(id, name, section, wip) VALUES ($1, $2, $3, $4) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, section = EXCLUDED.section, wip = EXCLUDED.wip",
         [cardSet.id, cardSet.name, cardSet.section, cardSet.wip]

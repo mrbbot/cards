@@ -1,1 +1,1 @@
-(window as any).reindex = () => (window.location.href = "/api/index");
+(window as any).reindex = () => (window.location.href = "/api/cards/reindex");

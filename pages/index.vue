@@ -88,12 +88,12 @@ export default Vue.extend({
       results: []
     };
     if (data.query) {
-      data.results = await $http.$get<Card[]>("/api/search", {
+      data.results = await $http.$get<Card[]>("/api/cards/search", {
         searchParams: { q: data.query }
       });
       store.commit("setNavbarTitle", "Search");
     } else {
-      data.sections = await $http.$get(`/api/sets`);
+      data.sections = await $http.$get("/api/cards/sets");
       store.commit("setNavbarTitle");
     }
 

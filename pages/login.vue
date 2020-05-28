@@ -65,6 +65,7 @@ export default Vue.extend({
     async login() {
       if (!this.loggingIn) {
         this.loggingIn = true;
+        this.$nuxt.$loading.start();
         try {
           await this.$auth.loginWith("local", {
             data: {
@@ -77,6 +78,7 @@ export default Vue.extend({
           // eslint-disable-next-line no-console
           console.error(e);
         } finally {
+          this.$nuxt.$loading.finish();
           this.loggingIn = false;
         }
       }

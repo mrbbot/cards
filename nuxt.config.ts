@@ -14,7 +14,8 @@ export default {
         content: process.env.npm_package_description || ""
       },
       { name: "msapplication-TileColor", content: "#000000" },
-      { name: "theme-color", content: "#000000" }
+      { name: "theme-color", content: "#000000" },
+      { property: "og:image", content: "/android-chrome-192x192.png" }
     ],
     link: [
       { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },

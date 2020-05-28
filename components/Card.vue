@@ -15,7 +15,7 @@
 
 <script lang="ts">
 import Vue, { PropOptions } from "vue";
-import { Card } from "~/api/services/db";
+import { Card } from "~/api/services/db/cards";
 
 export default Vue.extend({
   name: "Card",

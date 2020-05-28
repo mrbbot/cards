@@ -1,6 +1,7 @@
 import consola from "consola";
 import { parseAll } from "./parser";
-import { Card, CardSet, pool } from "./db";
+import { pool } from "./db/";
+import { Card, CardSet } from "./db/cards";
 
 export default async function indexer(indexPath: string) {
   const cardSets = await parseAll(indexPath);

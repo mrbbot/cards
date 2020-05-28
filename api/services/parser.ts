@@ -6,6 +6,8 @@ import MarkdownIt from "markdown-it";
 import Token from "markdown-it/lib/token";
 // @ts-ignore
 import mk from "markdown-it-katex";
+// @ts-ignore
+import attrs from "markdown-it-attrs";
 
 const dollarTrimRegex = /^\$+|\$+$/g;
 const metaRegex = /%(.+)%/;
@@ -58,6 +60,10 @@ export function parse(
   const wip = frontMatter.wip || false;
 
   const md = MarkdownIt({ html: true });
+  md.use(attrs, {
+    leftDelimiter: "{{",
+    rightDelimiter: "}}"
+  });
   md.use(mk, { throwOnError: false, macros });
 
   function renderTokens(tokens?: Token[]): RenderedText {

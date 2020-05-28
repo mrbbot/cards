@@ -8,7 +8,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { CardSet } from "~/api/services/db";
+import { CardSet } from "~/api/services/db/cards";
 import CardGrid from "~/components/CardGrid.vue";
 
 export default Vue.extend({
@@ -20,19 +20,19 @@ export default Vue.extend({
     return !!params.id;
   },
   async asyncData({
-    $http,
+    $axios,
     params,
     store,
     error
   }): Promise<{ set: CardSet } | undefined> {
-    const res = await $http.get(`/api/cards/sets/${params.id}`, {
-      throwHttpErrors: false
+    const res = await $axios.get<CardSet>(`/api/cards/sets/${params.id}`, {
+      validateStatus: (status) => status === 200 || status === 404
     });
     if (res.status === 404) {
       error({ statusCode: 404, message: "Set not found" });
       return;
     }
-    const set: CardSet = await res.json();
+    const set: CardSet = await res.data;
     store.commit("setNavbarTitle", set.name);
     if (set.cardCount === 0) {
       error({ statusCode: 200, message: "No cards in set" });

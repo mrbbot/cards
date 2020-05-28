@@ -50,7 +50,7 @@ export default {
   /*
    ** Plugins to load before mounting the App
    */
-  plugins: ["~/plugins/reindex.client.ts"],
+  plugins: [],
   /*
    ** Nuxt.js dev-modules
    */
@@ -58,9 +58,34 @@ export default {
   /*
    ** Nuxt.js modules
    */
-  modules: ["@nuxt/http"],
-  http: {
+  modules: ["@nuxtjs/axios", "@nuxtjs/auth-next"],
+  axios: {
     proxy: true
+  },
+  auth: {
+    strategies: {
+      local: {
+        scheme: "refresh",
+        token: {
+          property: "accessToken",
+          maxAge: 3600
+        },
+        refreshToken: {
+          property: "refreshToken",
+          data: "refreshToken",
+          maxAge: false
+        },
+        user: {
+          property: false
+        },
+        endpoints: {
+          login: { url: "/api/users/login", method: "post" },
+          refresh: { url: "/api/users/refresh", method: "post" },
+          user: { url: "/api/users/me", method: "get" },
+          logout: { url: "/api/users/logout", method: "post" }
+        }
+      }
+    }
   },
   /*
    ** Build configuration

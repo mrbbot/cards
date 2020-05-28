@@ -1,13 +1,14 @@
 import Router from "express-promise-router";
-import { getCardSet, getCardSets, searchCards } from "../services/db";
+import { getCardSet, getCardSets, searchCards } from "../services/db/cards";
 import indexer from "../services/indexer";
+import { auth } from "../services/db/users";
 
 const router = Router();
 
-router.get("/reindex", async (_req, res) => {
+router.get("/reindex", auth, async (_req, res) => {
   // @ts-ignore
   await indexer(process.env.CARDS_PATH);
-  res.redirect("/");
+  res.json(true);
 });
 
 router.get("/sets", async (_req, res) => {

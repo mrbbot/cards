@@ -1,11 +1,16 @@
 import express from "express";
+import bodyParser from "body-parser";
 import cards from "./routes/cards";
+import users from "./routes/users";
 
 const app = express();
 app.disable("x-powered-by");
 
+app.use(bodyParser.json());
+
 const api = express.Router();
 api.use("/cards", cards);
+api.use("/users", users);
 app.use("/api", api);
 
 // @ts-ignore

@@ -27,6 +27,19 @@ CREATE TABLE card (
 );
 CREATE INDEX card_document_index ON card USING gin(document);
 
+CREATE TABLE card_user (
+    username varchar(100) PRIMARY KEY,
+    password varchar(100)
+);
+
+CREATE TABLE card_user_refresh_token (
+    id uuid PRIMARY KEY,
+    username varchar(100) REFERENCES card_user(username) ON DELETE CASCADE,
+    token text
+);
+
 -- permissions for local test user
 GRANT ALL PRIVILEGES ON TABLE card_set TO cardsuser;
 GRANT ALL PRIVILEGES ON TABLE card TO cardsuser;
+GRANT ALL PRIVILEGES ON TABLE card_user TO cardsuser;
+GRANT ALL PRIVILEGES ON TABLE card_user_refresh_token TO cardsuser;

@@ -68,7 +68,7 @@
 import Vue from "vue";
 import { SearchIcon } from "vue-feather-icons";
 import CardGrid from "~/components/CardGrid.vue";
-import { Card, CardSetSection } from "~/api/services/db";
+import { Card, CardSetSection } from "~/api/services/db/cards";
 
 interface AsyncData {
   query: string;
@@ -81,19 +81,19 @@ export default Vue.extend({
     SearchIcon,
     CardGrid
   },
-  async asyncData({ $http, query, store }): Promise<AsyncData> {
+  async asyncData({ $axios, query, store }): Promise<AsyncData> {
     const data: AsyncData = {
       query: query.q?.toString() || "",
       sections: [],
       results: []
     };
     if (data.query) {
-      data.results = await $http.$get<Card[]>("/api/cards/search", {
-        searchParams: { q: data.query }
+      data.results = await $axios.$get<Card[]>("/api/cards/search", {
+        params: { q: data.query }
       });
       store.commit("setNavbarTitle", "Search");
     } else {
-      data.sections = await $http.$get("/api/cards/sets");
+      data.sections = await $axios.$get("/api/cards/sets");
       store.commit("setNavbarTitle");
     }
 

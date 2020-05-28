@@ -1,8 +1,4 @@
-import { Pool } from "pg";
-
-export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
-});
+import { pool } from "./index";
 
 export interface Card {
   id: string;

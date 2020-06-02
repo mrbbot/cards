@@ -1,34 +1,61 @@
 <template>
-  <div class="card-stack">
+  <Drop
+    class="card-stack"
+    :class="{ 'has-drag-over': dragOver }"
+    @dragover="dragOver = true"
+    @dragleave="dragOver = false"
+    @drop="onDrop"
+  >
     <p class="card-stack-label">{{ stack.name }}</p>
-    <Draggable :list="stack.cards" group="cards" class="card-stack-cards">
-      <Card
-        v-for="(card, i) in stack.cards"
-        v-show="i >= stack.cards.length - 2"
-        :key="card.id"
-        :card="card"
-      />
-    </Draggable>
-  </div>
+    <Drag
+      v-if="topCard"
+      :transfer-data="{ cardId: topCard.id, fromStackId: stack.id }"
+      effect-allowed="move"
+      class="card-stack-cards"
+    >
+      <Card :card="topCard" />
+    </Drag>
+  </Drop>
 </template>
 
 <script lang="ts">
 import Vue, { PropOptions } from "vue";
-import Draggable from "vuedraggable";
+import { Drag, Drop } from "vue-drag-drop";
 import Card from "~/components/Card.vue";
+import { Card as CardModel } from "~/api/services/db/cards";
 import { CardStack as CardStackModel } from "~/api/services/db/workspaces";
 
 export default Vue.extend({
   name: "CardGrid",
   components: {
     Card,
-    Draggable
+    Drag,
+    Drop
   },
   props: {
     stack: {
       type: Object,
       required: true
     } as PropOptions<CardStackModel>
+  },
+  data() {
+    return {
+      dragOver: false
+    };
+  },
+  computed: {
+    topCard(): CardModel {
+      return this.stack.cards[this.stack.cards.length - 1];
+    }
+  },
+  methods: {
+    onDrop({ cardId, fromStackId }: { cardId: string; fromStackId: string }) {
+      this.dragOver = false;
+      // if we're not moving to the same stack
+      if (fromStackId !== this.stack.id) {
+        this.$emit("move", { cardId, fromStackId, toStackId: this.stack.id });
+      }
+    }
   }
 });
 </script>
@@ -41,6 +68,8 @@ export default Vue.extend({
   box-sizing: border-box
   padding: 5mm
   border: 1px dashed #AAAAAA
+  &.has-drag-over
+    background-color: #F4F4F4
   .markdown-card, .card-stack-cards
     position: absolute
     width: 100%

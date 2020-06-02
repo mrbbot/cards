@@ -5,10 +5,11 @@
         v-for="stack in otherStacks"
         :key="stack.id"
         :stack="stack"
+        @move="onMove"
       ></CardStack>
     </div>
     <div class="default-stack">
-      <CardStack :stack="defaultStack"></CardStack>
+      <CardStack :stack="defaultStack" @move="onMove"></CardStack>
     </div>
   </div>
 </template>
@@ -53,6 +54,43 @@ export default Vue.extend({
     otherStacks(): CardStackModel[] {
       // @ts-ignore
       return this.workspace.stacks.slice(1);
+    }
+  },
+  methods: {
+    onMove({
+      cardId,
+      fromStackId,
+      toStackId
+    }: {
+      cardId: string;
+      fromStackId: string;
+      toStackId: string;
+    }) {
+      // @ts-ignore
+      const workspace = this.workspace as CardWorkspaceModel;
+
+      // check from and to stacks is
+      const fromStack = workspace.stacks.find((s) => s.id === fromStackId);
+      if (!fromStack) return;
+      const toStack = workspace.stacks.find((s) => s.id === toStackId);
+      if (!toStack) return;
+
+      // 1. get card from top of from stack
+      const fromStackTop = fromStack.cards[fromStack.cards.length - 1];
+      // check this matches expected card
+      if (fromStackTop.id !== cardId) {
+        // eslint-disable-next-line no-console
+        console.warn("Top of from stack different from dragged card!");
+        return;
+      }
+
+      // 2. remove card from top of from stack
+      fromStack.cards.splice(fromStack.cards.length - 1, 1);
+
+      // 3. add card to top of to stack
+      toStack.cards.push(fromStackTop);
+
+      // TODO: send API request to update database
     }
   },
   head() {

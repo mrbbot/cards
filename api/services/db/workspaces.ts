@@ -6,7 +6,7 @@ export interface CardStack {
   id: string;
   name: string;
   cardCount?: number;
-  cards?: Card[];
+  cards: Card[];
 }
 
 export interface CardWorkspace {
@@ -63,6 +63,7 @@ export async function getWorkspaces(
       [username]
     );
     for (const stack of stacksRes.rows) {
+      // @ts-ignore
       workspaces[workspaceIndices[stack.workspace_id]].stacks.push({
         id: stack.stack_id,
         name: stack.stack_name,

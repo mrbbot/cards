@@ -86,6 +86,13 @@ export default {
           logout: { url: "/api/users/logout", method: "post" }
         }
       }
+    },
+    cookie: {
+      options: {
+        maxAge: 31536000,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV !== "development"
+      }
     }
   },
   /*

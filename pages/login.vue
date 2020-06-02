@@ -31,7 +31,7 @@
         <div class="field">
           <div class="control">
             <button
-              class="button is-fullwidth is-link"
+              class="button is-fullwidth is-success"
               :class="{ 'is-loading': loggingIn }"
               :disabled="loggingIn"
               @click="login"

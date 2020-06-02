@@ -6,7 +6,6 @@ export interface Card {
   title: string;
   body: string;
   align?: string;
-  rank?: number;
 }
 
 export interface CardSet {

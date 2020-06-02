@@ -53,6 +53,7 @@ export default Vue.extend({
   display: flex
   align-items: center
   justify-content: center
+  background-color: white
   .markdown-body h1,
   .markdown-body h2
     border-bottom: none

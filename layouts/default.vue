@@ -16,7 +16,7 @@
             <div class="navbar-link">{{ auth.user.username }}</div>
             <div class="navbar-dropdown is-right">
               <nuxt-link class="navbar-item" to="/workspace/">
-                Workspace
+                Workspaces
               </nuxt-link>
               <a class="navbar-item" @click="reindex">Reindex</a>
               <hr class="navbar-divider" />

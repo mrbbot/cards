@@ -1,6 +1,7 @@
 import path from "path";
 import { promises as fs, existsSync } from "fs";
 import crypto from "crypto";
+import consola from "consola";
 import matter from "gray-matter";
 import MarkdownIt from "markdown-it";
 import Token from "markdown-it/lib/token";
@@ -52,6 +53,8 @@ export function parse(
   data: string,
   macros?: object
 ): ParsedCardSet {
+  consola.info("Parsing", fileName + " ...");
+
   const { content, data: frontMatter } = matter(data);
   const name =
     frontMatter.name || fileName.substring(0, fileName.lastIndexOf("."));

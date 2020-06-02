@@ -33,19 +33,14 @@ export default Vue.extend({
       return;
     }
     const set: CardSet = await res.data;
-    store.commit("setNavbarTitle", set.name);
-    if (set.cardCount === 0) {
-      error({ statusCode: 200, message: "No cards in set" });
-      return;
-    }
+    store.commit("setNavbarTitle", set.name + (set.wip ? " (WIP)" : ""));
     return { set };
   },
   head() {
     // @ts-ignore
-    const name = this.set.name;
+    const { name, wip } = this.set;
     return {
-      // @ts-ignore
-      title: name + " | Cards",
+      title: name + (wip ? " (WIP)" : "") + " | Cards",
       meta: [
         {
           hid: "description",

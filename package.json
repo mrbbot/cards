@@ -35,7 +35,8 @@
     "patch-package": "^6.2.2",
     "pg": "^8.2.1",
     "uuid": "^8.1.0",
-    "vue-feather-icons": "^5.0.0"
+    "vue-feather-icons": "^5.0.0",
+    "vuedraggable": "^2.23.2"
   },
   "devDependencies": {
     "@nuxt/typescript-build": "^0.6.0",
@@ -48,6 +49,7 @@
     "@types/pg": "^7.14.3",
     "@types/uuid": "^8.0.0",
     "@types/vue-feather-icons": "^5.0.0",
+    "@types/vuedraggable": "^2.23.1",
     "babel-eslint": "^10.0.1",
     "eslint": "^6.1.0",
     "eslint-config-prettier": "^6.10.0",

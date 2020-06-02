@@ -57,14 +57,14 @@ export default Vue.extend({
     }
   },
   methods: {
-    onMove({
+    async onMove({
       cardId,
       fromStackId,
-      toStackId
+      targetStackId
     }: {
       cardId: string;
       fromStackId: string;
-      toStackId: string;
+      targetStackId: string;
     }) {
       // @ts-ignore
       const workspace = this.workspace as CardWorkspaceModel;
@@ -72,8 +72,8 @@ export default Vue.extend({
       // check from and to stacks is
       const fromStack = workspace.stacks.find((s) => s.id === fromStackId);
       if (!fromStack) return;
-      const toStack = workspace.stacks.find((s) => s.id === toStackId);
-      if (!toStack) return;
+      const targetStack = workspace.stacks.find((s) => s.id === targetStackId);
+      if (!targetStack) return;
 
       // 1. get card from top of from stack
       const fromStackTop = fromStack.cards[fromStack.cards.length - 1];
@@ -88,9 +88,16 @@ export default Vue.extend({
       fromStack.cards.splice(fromStack.cards.length - 1, 1);
 
       // 3. add card to top of to stack
-      toStack.cards.push(fromStackTop);
+      targetStack.cards.push(fromStackTop);
 
-      // TODO: send API request to update database
+      await this.$axios.$patch(
+        `/api/workspaces/${this.$route.params.id}/move`,
+        {
+          cardId,
+          fromStackId,
+          targetStackId
+        }
+      );
     }
   },
   head() {
@@ -124,7 +131,7 @@ export default Vue.extend({
   .other-stacks
     display: flex
     flex-direction: row
-    margin-bottom: 32px
+    margin-bottom: 64px
     .card-stack:not(:last-child)
-      margin-right: 32px
+      margin-right: 24px
 </style>

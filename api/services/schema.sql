@@ -47,14 +47,12 @@ CREATE TABLE card_workspace (
     name text NOT NULL,
     username varchar(100) REFERENCES card_user(username) ON DELETE CASCADE
 );
--- ALTER TABLE card_workspace ADD COLUMN username varchar(100) REFERENCES card_user(username) ON DELETE CASCADE DEFAULT 'mrbbot';
 CREATE TABLE card_workspace_stack (
     id uuid PRIMARY KEY,
     workspace_id text REFERENCES card_workspace(id) ON DELETE CASCADE,
     name text NOT NULL,
     ordering int NOT NULL
 );
--- ALTER TABLE card_workspace_stack ADD COLUMN ordering int NOT NULL DEFAULT 0;
 CREATE TABLE card_workspace_stack_card (
     workspace_id text REFERENCES card_workspace(id) ON DELETE CASCADE,
     stack_id uuid REFERENCES card_workspace_stack(id) ON DELETE CASCADE,
@@ -62,6 +60,9 @@ CREATE TABLE card_workspace_stack_card (
     ordering int NOT NULL,
     PRIMARY KEY (workspace_id, card_id)
 );
+
+-- ALTER TABLE card_workspace ADD COLUMN username varchar(100) REFERENCES card_user(username) ON DELETE CASCADE DEFAULT 'mrbbot';
+-- ALTER TABLE card_workspace_stack ADD COLUMN ordering int NOT NULL DEFAULT 0;
 
 -- permissions for local test user
 GRANT ALL PRIVILEGES ON TABLE card_set TO cardsuser;

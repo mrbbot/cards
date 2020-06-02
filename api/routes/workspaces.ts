@@ -4,7 +4,8 @@ import { auth, AuthenticatedRequest } from "../services/db/users";
 import {
   getWorkspaces,
   addSetToWorkspace,
-  getWorkspace
+  getWorkspace,
+  moveCardToStack
 } from "../services/db/workspaces";
 
 const router = Router();
@@ -45,6 +46,36 @@ router.put("/:workspaceId/add", auth, async (req, res) => {
   }
 
   res.json(addRes);
+});
+
+router.patch("/:workspaceId/move", auth, async (req, res) => {
+  // TODO: if cardId omitted, move entire stack to stack
+  if (
+    !(
+      isString(req.body.cardId) &&
+      isString(req.body.fromStackId) &&
+      isString(req.body.targetStackId)
+    )
+  ) {
+    res.status(400);
+    res.json(false);
+    return;
+  }
+
+  const updateRes = await moveCardToStack(
+    (req as AuthenticatedRequest).user.username,
+    req.params.workspaceId,
+    req.body.cardId,
+    req.body.fromStackId,
+    req.body.targetStackId
+  );
+  if (!updateRes) {
+    res.status(404);
+    res.json(false);
+    return;
+  }
+
+  res.json(true);
 });
 
 export default router;

@@ -6,7 +6,10 @@
     @dragleave="dragOver = false"
     @drop="onDrop"
   >
-    <p class="card-stack-label">{{ stack.name }}</p>
+    <p class="card-stack-label for-top">{{ stack.name }}</p>
+    <p class="card-stack-label for-bottom">
+      {{ stack.cards.length }} card{{ stack.cards.length === 1 ? "" : "s" }}
+    </p>
     <Drag
       v-if="topCard"
       :transfer-data="{ cardId: topCard.id, fromStackId: stack.id }"
@@ -53,7 +56,11 @@ export default Vue.extend({
       this.dragOver = false;
       // if we're not moving to the same stack
       if (fromStackId !== this.stack.id) {
-        this.$emit("move", { cardId, fromStackId, toStackId: this.stack.id });
+        this.$emit("move", {
+          cardId,
+          fromStackId,
+          targetStackId: this.stack.id
+        });
       }
     }
   }
@@ -76,6 +83,9 @@ export default Vue.extend({
     height: 100%
   .card-stack-label
     position: absolute
-    top: -24px
     left: 0
+    &.for-top
+      top: -32px
+    &.for-bottom
+      bottom: -32px
 </style>

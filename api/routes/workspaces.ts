@@ -1,11 +1,14 @@
 import Router from "express-promise-router";
+import isArray from "lodash/isArray";
 import isString from "lodash/isString";
 import { auth, AuthenticatedRequest } from "../services/db/users";
 import {
   getWorkspaces,
   addSetToWorkspace,
   getWorkspace,
-  moveCardToStack
+  moveCardToStack,
+  moveStackToStack,
+  setStackOrder
 } from "../services/db/workspaces";
 
 const router = Router();
@@ -49,12 +52,41 @@ router.put("/:workspaceId/add", auth, async (req, res) => {
 });
 
 router.patch("/:workspaceId/move", auth, async (req, res) => {
-  // TODO: if cardId omitted, move entire stack to stack
+  if (!(isString(req.body.fromStackId) && isString(req.body.targetStackId))) {
+    res.status(400);
+    res.json(false);
+    return;
+  }
+
+  const updateRes = isString(req.body.cardId)
+    ? await moveCardToStack(
+        (req as AuthenticatedRequest).user.username,
+        req.params.workspaceId,
+        req.body.cardId,
+        req.body.fromStackId,
+        req.body.targetStackId
+      )
+    : await moveStackToStack(
+        (req as AuthenticatedRequest).user.username,
+        req.params.workspaceId,
+        req.body.fromStackId,
+        req.body.targetStackId
+      );
+  if (!updateRes) {
+    res.status(404);
+    res.json(false);
+    return;
+  }
+
+  res.json(true);
+});
+
+router.patch("/:workspaceId/order", auth, async (req, res) => {
   if (
     !(
-      isString(req.body.cardId) &&
-      isString(req.body.fromStackId) &&
-      isString(req.body.targetStackId)
+      isString(req.body.stackId) &&
+      isArray(req.body.cardIdOrder) &&
+      req.body.cardIdOrder.every((cardId: any) => isString(cardId))
     )
   ) {
     res.status(400);
@@ -62,15 +94,14 @@ router.patch("/:workspaceId/move", auth, async (req, res) => {
     return;
   }
 
-  const updateRes = await moveCardToStack(
+  const updateRes = await setStackOrder(
     (req as AuthenticatedRequest).user.username,
     req.params.workspaceId,
-    req.body.cardId,
-    req.body.fromStackId,
-    req.body.targetStackId
+    req.body.stackId,
+    req.body.cardIdOrder
   );
   if (!updateRes) {
-    res.status(404);
+    res.status(400);
     res.json(false);
     return;
   }

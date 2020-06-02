@@ -6,17 +6,23 @@
     @dragleave="dragOver = false"
     @drop="onDrop"
   >
-    <p class="card-stack-label for-top">{{ stack.name }}</p>
-    <p class="card-stack-label for-bottom">
+    <p class="card-stack-meta top left">{{ stack.name }}</p>
+    <p class="card-stack-meta bottom left">
       {{ stack.cards.length }} card{{ stack.cards.length === 1 ? "" : "s" }}
     </p>
+    <div class="card-stack-meta bottom right">
+      <IconButton @click="$emit('action', action)">
+        <ArrowDownIcon v-if="action === 'move'" size="16" />
+        <ShuffleIcon v-else-if="action === 'shuffle'" size="16" />
+      </IconButton>
+    </div>
     <Drag
       v-if="topCard"
       :transfer-data="{ cardId: topCard.id, fromStackId: stack.id }"
       effect-allowed="move"
       class="card-stack-cards"
     >
-      <Card :card="topCard" />
+      <Card :key="topCard.id" :card="topCard" />
     </Drag>
   </Drop>
 </template>
@@ -24,22 +30,34 @@
 <script lang="ts">
 import Vue, { PropOptions } from "vue";
 import { Drag, Drop } from "vue-drag-drop";
+import { ArrowDownIcon, ShuffleIcon } from "vue-feather-icons";
 import Card from "~/components/Card.vue";
+import IconButton from "~/components/IconButton.vue";
 import { Card as CardModel } from "~/api/services/db/cards";
 import { CardStack as CardStackModel } from "~/api/services/db/workspaces";
 
 export default Vue.extend({
   name: "CardGrid",
   components: {
-    Card,
     Drag,
-    Drop
+    Drop,
+    ArrowDownIcon,
+    ShuffleIcon,
+    Card,
+    IconButton
   },
   props: {
     stack: {
       type: Object,
       required: true
-    } as PropOptions<CardStackModel>
+    } as PropOptions<CardStackModel>,
+    action: {
+      type: String,
+      default: "move",
+      validator(value: any): boolean {
+        return value === "move" || value === "shuffle";
+      }
+    } as PropOptions<"move" | "shuffle">
   },
   data() {
     return {
@@ -81,11 +99,14 @@ export default Vue.extend({
     position: absolute
     width: 100%
     height: 100%
-  .card-stack-label
+  .card-stack-meta
     position: absolute
-    left: 0
-    &.for-top
-      top: -32px
-    &.for-bottom
-      bottom: -32px
+    &.top
+      bottom: calc(100% + 8px)
+    &.left
+      left: 0
+    &.bottom
+      top: calc(100% + 8px)
+    &.right
+      right: 0
 </style>

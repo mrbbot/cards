@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+import { PoolClient } from "pg";
 import { Card } from "./cards";
 import { pool } from "./index";
 
@@ -207,6 +208,28 @@ export async function addSetToWorkspace(
   }
 }
 
+async function getStackCardCount(
+  client: PoolClient,
+  username: string,
+  workspaceId: string,
+  stackId: string
+): Promise<number> {
+  const res = await client.query<{ card_count: string }>(
+    "SELECT cws.id, COUNT(cwsc.card_id) AS card_count " +
+      "FROM card_workspace cw " +
+      "JOIN card_workspace_stack cws on cw.id = cws.workspace_id " +
+      "LEFT JOIN card_workspace_stack_card cwsc on cws.id = cwsc.stack_id " +
+      "WHERE cw.username = $1 AND cws.workspace_id = $2 AND cws.id = $3 " +
+      "GROUP BY cws.id",
+    [username, workspaceId, stackId]
+  );
+  if (res.rowCount === 0) {
+    // couldn't find stack for given workspace, user and stack id
+    return -1;
+  }
+  return parseInt(res.rows[0].card_count);
+}
+
 export async function moveCardToStack(
   username: string,
   workspaceId: string,
@@ -219,21 +242,17 @@ export async function moveCardToStack(
     await client.query("BEGIN");
 
     // 1. get number of cards in target stack
-    const stackRes = await client.query<{ card_count: string }>(
-      "SELECT cws.id, COUNT(cwsc.card_id) AS card_count " +
-        "FROM card_workspace cw " +
-        "JOIN card_workspace_stack cws on cw.id = cws.workspace_id " +
-        "LEFT JOIN card_workspace_stack_card cwsc on cws.id = cwsc.stack_id " +
-        "WHERE cw.username = $1 AND cws.workspace_id = $2 AND cws.id = $3 " +
-        "GROUP BY cws.id",
-      [username, workspaceId, targetStackId]
+    const stackCardCount = await getStackCardCount(
+      client,
+      username,
+      workspaceId,
+      targetStackId
     );
-    if (stackRes.rowCount === 0) {
+    if (stackCardCount === -1) {
       await client.query("ROLLBACK");
       // couldn't find stack for given workspace, user and stack id
       return false;
     }
-    const stackCardCount = parseInt(stackRes.rows[0].card_count);
 
     // 2. change card to be in target stack
     await client.query(
@@ -242,6 +261,123 @@ export async function moveCardToStack(
         "WHERE workspace_id = $3 AND stack_id = $4 AND card_id = $5",
       [targetStackId, stackCardCount, workspaceId, fromStackId, cardId]
     );
+
+    await client.query("COMMIT");
+    return true;
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
+async function getStackCardIds(
+  client: PoolClient,
+  username: string,
+  workspaceId: string,
+  stackId: string
+): Promise<string[]> {
+  const res = await client.query<{ card_id: string }>(
+    "SELECT cwsc.card_id " +
+      "FROM card_workspace cw " +
+      "JOIN card_workspace_stack cws on cw.id = cws.workspace_id " +
+      "JOIN card_workspace_stack_card cwsc on cws.id = cwsc.stack_id " +
+      "WHERE cw.username = $1 AND cws.workspace_id = $2 AND cws.id = $3",
+    [username, workspaceId, stackId]
+  );
+  return res.rows.map((row) => row.card_id);
+}
+
+export async function moveStackToStack(
+  username: string,
+  workspaceId: string,
+  fromStackId: string,
+  targetStackId: string
+): Promise<boolean> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    // 1. get number of cards in target stack
+    const stackCardCount = await getStackCardCount(
+      client,
+      username,
+      workspaceId,
+      targetStackId
+    );
+    if (stackCardCount === -1) {
+      await client.query("ROLLBACK");
+      // couldn't find stack for given workspace, user and stack id
+      return false;
+    }
+
+    // 2. get all cards in from stack
+    const stackCardIds = await getStackCardIds(
+      client,
+      username,
+      workspaceId,
+      fromStackId
+    );
+
+    // 3. update all cards to be in target stack
+    for (let i = 0; i < stackCardIds.length; i++) {
+      const cardId = stackCardIds[i];
+      await client.query(
+        "UPDATE card_workspace_stack_card " +
+          "SET stack_id = $1, ordering = $2 " +
+          "WHERE workspace_id = $3 AND stack_id = $4 AND card_id = $5",
+        [targetStackId, stackCardCount + i, workspaceId, fromStackId, cardId]
+      );
+    }
+
+    await client.query("COMMIT");
+    return true;
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
+export async function setStackOrder(
+  username: string,
+  workspaceId: string,
+  stackId: string,
+  cardIdOrder: string[]
+): Promise<boolean> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    // 1. get all cards in stack and check order defines all card positions
+    const stackCardIds = new Set(
+      await getStackCardIds(client, username, workspaceId, stackId)
+    );
+
+    for (let i = 0; i < cardIdOrder.length; i++) {
+      const cardId = cardIdOrder[i];
+      stackCardIds.delete(cardId);
+
+      const updateRes = await client.query(
+        "UPDATE card_workspace_stack_card " +
+          "SET ordering = $1 " +
+          "WHERE workspace_id = $2 AND stack_id = $3 AND card_id = $4",
+        [i, workspaceId, stackId, cardId]
+      );
+      if (updateRes.rowCount !== 1) {
+        // weren't able to find card to update so rollback
+        await client.query("ROLLBACK");
+        return false;
+      }
+    }
+
+    // check we updated all card positions, if not, rollback
+    if (stackCardIds.size > 0) {
+      await client.query("ROLLBACK");
+      return false;
+    }
 
     await client.query("COMMIT");
     return true;

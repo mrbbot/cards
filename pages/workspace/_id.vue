@@ -30,6 +30,7 @@ import {
 } from "~/api/services/db/workspaces";
 
 export default Vue.extend({
+  middleware: "auth",
   components: {
     CardStack
   },
